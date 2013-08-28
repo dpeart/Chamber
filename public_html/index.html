@@ -1,0 +1,94 @@
+<?php
+include_once 'insert_mysql.php';
+include_once 'select_mysql.php';
+include_once 'home.php';
+include_once 'batch.php';
+include_once 'add_meat.php';
+//include_once 'temp.php';
+?>
+<html>
+  <head>
+    <link rel='stylesheet' type='text/css' href='styles.css'>
+    <link rel="stylesheet" href="http://code.jquery.com/ui/1.10.2/themes/smoothness/jquery-ui.css" />
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.0/jquery.min.js"></script>
+    <script src="http://code.jquery.com/ui/1.10.2/jquery-ui.js"></script>
+    <script src="http://www.flotcharts.org/flot/jquery.flot.js"></script>
+    <script src="http://www.flotcharts.org/flot/jquery.flot.crosshair.js"></script>
+    <script src="http://www.flotcharts.org/flot/jquery.flot.time.js"></script>
+    <script src="http://www.flotcharts.org/flot/jquery.flot.selection.js"></script>
+    <script src="select_batch.js"></script>
+    
+    <script>    
+      var overview, chart, options, overviewoptions;
+      var currentBatch = $("input#createBatchName").val();
+      
+      $(document).ready(function() {
+        // Tabs
+        $("#tabs").tabs();   
+        $('#tabs, #select_batch').tabs({
+          select: selectBatchInit() });
+       });   
+
+    </script>
+
+  </head>
+  <body>
+    <div id="tabs">
+      <ul>
+        <li><a href="#home">Home</a></li>
+        <li><a href="#batch">Create Batch</a></li>
+        <li><a href="#selectBatch">Select Batch</a></li>
+        <li><a href="#updateBatch">Update Batch</a></li>
+        <li><a href="#debug">Debug</a></li>
+      </ul>
+      
+      <div id = "batch">
+        <form>
+          Name:<input type = "text" id = "createBatchName"><br>
+          <input type="submit" value="Create" onClick="createBatch();">
+        </form>
+        <div id="batch_output"></div>
+      </div>
+
+      <div id="selectBatch">
+        <h1>Select Batch</h1>
+        <form> 
+          <select id="selectBatchName"></select>
+          <input type="button" value="Select" onClick="getBatch();">
+          <input type="button" value="Delete" onClick="deleteBatch();">
+        </form>
+        <div id="selectBatch_output"></div>
+      </div>
+      
+      <div id="updateBatch">
+        <form id="updateBatch">
+          <h1>Current Batch: </h1>
+          Name:<input type="text" id="Name"><br>
+          Recipe:<input type="text" id="Recipe"><br>
+          Culture:<input type="text" id="Culture"><br>
+          Mold:<input type="text" id="Mold"><br>
+          <input type="submit" value="Submit" onClick="updateBatch();">
+        </form>
+      </div>
+      
+      <div id= "home">
+        <div class="demo-container">
+          <div id="current_graph" class="demo-placeholder"></div>
+          <div id="overview_graph" class="overview-placeholder"></div>
+        </div>
+        <?php
+        $home = home();
+        echo $home;
+        $start = 1365388734;
+        $stop = 1365506734;
+        $type = 'Internal Temperature';
+        $dataset = getReadings($start, $stop, $type);
+        $type = 'Internal Humidity';
+        $dataset1 = getReadings($start, $stop, $type);
+        ?>
+      </div>
+      
+      <div id="debug"></div>
+    </div>
+  </body>
+</html>
