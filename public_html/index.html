@@ -24,11 +24,10 @@ include_once 'add_meat.php';
       
       $(document).ready(function() {
         // Tabs
-        $("#tabs").tabs();   
-        $('#tabs, #select_batch').tabs({
-          select: selectBatchInit() });
-       });   
-
+        $("#tabs").tabs({
+          beforeLoad: selectBatchInit()
+        });   
+      });
     </script>
 
   </head>
@@ -45,7 +44,7 @@ include_once 'add_meat.php';
       <div id = "batch">
         <form>
           Name:<input type = "text" id = "createBatchName"><br>
-          <input type="submit" value="Create" onClick="createBatch();">
+          <input type="button" value="Create" onClick="createBatch();">
         </form>
         <div id="batch_output"></div>
       </div>
@@ -67,7 +66,7 @@ include_once 'add_meat.php';
           Recipe:<input type="text" id="Recipe"><br>
           Culture:<input type="text" id="Culture"><br>
           Mold:<input type="text" id="Mold"><br>
-          <input type="submit" value="Submit" onClick="updateBatch();">
+          <input type="button" value="Submit" onClick="updateBatch();">
         </form>
       </div>
       

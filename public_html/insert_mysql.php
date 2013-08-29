@@ -30,5 +30,6 @@ $mysqli = doDB();
 
 $mysqli->query($query) or exit($mysqli->error);
 
+echo json_encode($query);
 //$mysqli->close();
 ?>

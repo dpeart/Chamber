@@ -52,32 +52,47 @@ function getMeat(idBatch) {
     $("div#selectBatch_output").append('<h2> No products in this batch</h2>');
   });
 }
-  function createBatch() {
-    var batchName = $("input#createBatchName").val();
 
-    $.post('insert_mysql.php', {cmd: 'createBatch', val: batchName}, function(data) {
-      var test = data;
-      $("div#batch_output").append("createBatch: batchName successful");
-    })
-    .error(function(data) {
+function createBatch() {
+  var batchName = $("input#createBatchName").val();
+
+  $.ajax({
+    type: 'POST',
+    url: 'insert_mysql.php',
+    data: {cmd: 'createBatch', val: batchName},
+    success: function(data) {
+//      var test = data;
+//      alert('Success: ' + data);
+      $("div#batch_output").html("Success");
+      selectBatchInit();
+    },
+    error: function(data) {
       var test = data;
       alert('Error: createBatch Failed');
-      $("div#batch_output").append("createBatch: batchName unsuccessful");
-    });
-  }
+      $("div#batch_output").html("createBatch: batchName unsuccessful");
+    },
+    async: true
+  });
+}
 
 //TODO: when we delete a batch make sure we also delete all meats attached to the batch
 function deleteBatch() {
   var idBatch = $('select#selectBatchName').val();
-  $.post('insert_mysql.php', {cmd: 'deleteBatch', val: idBatch}, function(data) {
-    // Update batch pulldown
-    selectBatchInit();
-    // Clear out Batch information
-    $("div#selectBatch_output").html("");
-  })
-  .error(function(data) {
-    var test = data;
-    alert('Error: deleteBatch Failed');
+  $.ajax({
+    type: 'POST',
+    url: 'insert_mysql.php',
+    data: {cmd: 'deleteBatch', val: idBatch}, 
+    success: function(data) {
+      // Update batch pulldown
+      selectBatchInit();
+      // Clear out Batch information
+      $("div#selectBatch_output").html("");
+    },
+    error: function(data) {
+      var test = data;
+      alert('Error: deleteBatch Failed');
+    },
+    async: true
   });
 } 
 
@@ -87,12 +102,19 @@ function updateBatch() {
              $('input#Recipe').val() +  "', '" +
              $('input#Culture').val() +  "', '" +
              $('input#Mold').val() + "');";
-  $.post('insert_mysql.php', {cmd: 'updateBatch', val: data}, function(data) {
-    var test = data;
-  })
-  .error(function(data) {
-    var test = data;
-    alert('Error: updateBatch Failed');
+  $.ajax({
+    type: 'POST',
+    url: 'insert_mysql.php',
+    data: {cmd: 'updateBatch', val: data},
+    success: function(data) {
+      var test = data;
+      alert('Success:' + test);
+    },
+    error: function(data) {
+      var test = data;
+      alert('Error: updateBatch Failed');
+    },
+    async: true
   });
 
 }
