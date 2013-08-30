@@ -172,20 +172,33 @@ include_once 'batch.php';
   <body>
     <div class="easyui-tabs" id="tabs">         
       <div Title= "Home">
-        <div class="demo-container">
+       <div class="demo-container">
           <div id="current_graph" class="demo-placeholder"></div>
           <div id="overview_graph" class="overview-placeholder"></div>
         </div>
-        <?php
-        $home = home();
-        echo $home;
-        $start = 1365388734;
-        $stop = 1365506734;
-        $type = 'Internal Temperature';
-        $dataset = getReadings($start, $stop, $type);
-        $type = 'Internal Humidity';
-        $dataset1 = getReadings($start, $stop, $type);
-        ?>
+
+        <table id="dgStatus" class="easyui-datagrid" style="width:750px"
+          url="statusGet.php" 
+          fitcolumns="true">
+          <thead>
+            <tr>
+              <th field="idStatus" hidden="true">ID</th>
+              <th field="idBatch"">Batch</th>
+              <th field="Temp Setpoint">Temp</th>
+              <th field="Humidity Setpoint">Humidity</th>
+              <th field="Store Readings">Store Readings</th>
+              <th field="PID H Kp">H-Kp</th>
+              <th field="PID H Ki">H-Kp</th>
+              <th field="PID H Kd">H-Kp</th>
+              <th field="PID T Kp">T-Kp</th>
+              <th field="PID T Ki">T-Ki</th>
+              <th field="PID T Kd"T-Kd</th>
+              <th field="Sensor Read Timeout">Sensor Read<br>Timeout</th>
+              <th field="Window Size">Window Size</th>
+              <th field="Sample Delay">Sample Delay</th>
+            </tr>
+          </thead>
+        </table>
       </div>
 
       <div title="Admin">
