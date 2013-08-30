@@ -31,27 +31,39 @@ include_once 'batch.php';
         // Tabs
         $("#tabs").tabs({
           beforeLoad: selectBatchInit()
-        });   
+        }); 
+        
+        $('#dgBatch').datagrid({
+          onClickRow:function(rowIndex,row){
+            currentBatch = row.idBatch;
+            $('#dgItem').datagrid({
+              url:'itemGet.php?idBatch='+row.idBatch 
+            });
+            $('#dgItem').datagrid('reload');	// reload the user data
+          }
+        });       
       });     
 
       function itemNew(){
-        $('#dlg').dialog('open').dialog('setTitle','New Item');
-        $('#fm').form('clear');
-        $('#fm').form('load',{
+        $('#dlgItem').dialog('open').dialog('setTitle','New Item');
+        $('#fmItem').form('clear');
+        $('#fmItem').form('load',{
             idBatch:currentBatch
         });
         url = 'itemNew.php';
       }
+      
       function itemEdit(){
-        var row = $('#dg').datagrid('getSelected');
+        var row = $('#dgItem').datagrid('getSelected');
         if (row){
-          $('#dlg').dialog('open').dialog('setTitle','Edit Item');
-          $('#fm').form('load',row);
+          $('#dlgItem').dialog('open').dialog('setTitle','Edit Item');
+          $('#fmItem').form('load',row);
           url = 'itemEdit.php?id='+row.idMeat;
         }
       }
+      
       function itemSave(){
-        $('#fm').form('submit',{
+        $('#fmItem').form('submit',{
           url: url,
           onSubmit: function(){
             return $(this).form('validate');
@@ -59,8 +71,8 @@ include_once 'batch.php';
           success: function(result){
             var result = eval('('+result+')');
             if (result.success){
-              $('#dlg').dialog('close');		// close the dialog
-              $('#dg').datagrid('reload');	// reload the user data
+              $('#dlgItem').dialog('close');		// close the dialog
+              $('#dgItem').datagrid('reload');	// reload the user data
             } else {
               $.messager.show({
                 title: 'Error',
@@ -71,13 +83,13 @@ include_once 'batch.php';
         });
       }
       function itemRemove(){
-        var row = $('#dg').datagrid('getSelected');
+        var row = $('#dgItem').datagrid('getSelected');
         if (row){
           $.messager.confirm('Confirm','Are you sure you want to remove this user?',function(r){
             if (r){
               $.post('itemRemove.php', {id: row.idMeat}, function(result) {
               if (result.success) {
-                $('#dg').datagrid('reload');	// reload the user data
+                $('#dgItem').datagrid('reload');	// reload the user data
               } else {
                 $.messager.show({// show error message
                   title: 'Error',
@@ -90,19 +102,75 @@ include_once 'batch.php';
         }
       }
       
-      function getBatch() {
+      function itemGet() {
         currentBatch = $('select#selectBatchName').val();
-        $('#dg').datagrid({
+        $('#dgItem').datagrid({
           url:'itemGet.php?idBatch='+currentBatch 
         });
-        $('#dg').datagrid('reload');	// reload the user data
+        $('#dgItem').datagrid('reload');	// reload the user data
+      }
+      
+      function batchCreate() {
+        $('#dlgBatch').dialog('open').dialog('setTitle','New Batch');
+        $('#fmItem').form('clear');
+
+        url = 'batchNew.php';
+      }
+      
+      function batchRemove(){
+        var row = $('#dgBatch').datagrid('getSelected');
+        if (row){
+          $.messager.confirm('Confirm','Are you sure you want to remove this user?',function(r){
+            if (r){
+              $.post('batchRemove.php', {id: row.idBatch}, function(result) {
+              if (result.success) {
+                $('#dgBatch').datagrid('reload');	// reload the user data
+              } else {
+                $.messager.show({// show error message
+                  title: 'Error',
+                  msg: result.msg
+                });
+              }
+              }, 'json');
+            }
+          });
+        }
+      }
+      
+      function batchEdit(){
+        var row = $('#dgBatch').datagrid('getSelected');
+        if (row){
+          $('#dlgBatch').dialog('open').dialog('setTitle','Edit Batch');
+          $('#fmBatch').form('load',row);
+          url = 'batchEdit.php?id='+row.idBatch;
+        }
+      }
+      
+      function batchSave(){
+        $('#fmBatch').form('submit',{
+          url: url,
+          onSubmit: function(){
+            return $(this).form('validate');
+          },
+          success: function(result){
+            var result = eval('('+result+')');
+            if (result.success){
+              $('#dlgBatch').dialog('close');		// close the dialog
+              $('#dgBatch').datagrid('reload');	// reload the user data
+            } else {
+              $.messager.show({
+                title: 'Error',
+                msg: result.msg
+              });
+            }
+          }
+        });
       }
     </script>
 
   </head>
   <body>
-    <div class="easyui-tabs" id="tabs">
-         
+    <div class="easyui-tabs" id="tabs">         
       <div Title= "Home">
         <div class="demo-container">
           <div id="current_graph" class="demo-placeholder"></div>
@@ -121,26 +189,51 @@ include_once 'batch.php';
       </div>
 
       <div title="Admin">
-        <form>
-          <input type = "text" id = "createBatchName">
-          <input type="button" value="Create Batch" onClick="createBatch();">
-        </form>
-        <div id="batch_output"></div>
+          <p> Batches
+          <div id="batch_output"></div>
+          <table id="dgBatch" class="easyui-datagrid" style="width:500px"
+            url="batchGet.php"
+            toolbar="#toolbarBatch" pagination="true"
+            rownumbers="true" fitColumns="true" singleSelect="true">
+            <thead>
+              <tr>
+                <th field="idBatch" width="15" hidden="true">ID</th>
+                <th field="Name" width="50">Name</th>
+              </tr>            
+            </thead>
+          </table>      
+          
+          <div id="toolbarBatch">
+              <a href="#" class="easyui-linkbutton" iconCls="icon-add" plain="true" onclick="batchCreate()">New</a>
+              <a href="#" class="easyui-linkbutton" iconCls="icon-edit" plain="true" onclick="batchEdit()">Edit</a>
+              <a href="#" class="easyui-linkbutton" iconCls="icon-remove" plain="true" onclick="batchRemove()">Delete</a>
+          </div>
+
+          <div id="dlgBatch" class="easyui-dialog" style="width:400px;height:280px;padding:10px 20px"
+              closed="true" buttons="#dlgBatch-buttons">
+              <div class="ftitle">Batch Information</div>
+              <form id="fmBatch" method="post" novalidate>
+                <div class="fitem">
+                  <label>Name:</label>
+                  <input name="Name" class="easyui-validatebox" required="true">
+                </div>
+              </form>
+          </div>
+        </p>
         
-        <form> 
-          <select id="selectBatchName"></select>
-          <input type="button" value="Select" onClick="getBatch();">
-          <input type="button" value="Delete" onClick="deleteBatch();">
-        </form>
-        <div id="selectBatch_output"></div>
+        <div id="dlgBatch-buttons">
+            <a href="#" class="easyui-linkbutton" iconCls="icon-ok" onclick="batchSave()">Save</a>
+            <a href="#" class="easyui-linkbutton" iconCls="icon-cancel" onclick="javascript:$('#dlgBatch').dialog('close')">Cancel</a>
+        </div>
         
-        <table id="dg" class="easyui-datagrid" style="width:700px;height:250px"
-                toolbar="#toolbar" pagination="true" idField="idMeat"
+        <p> Items
+        <table id="dgItem" class="easyui-datagrid" style="width:700px;height:250px"
+                toolbar="#toolbarItem" pagination="true" idField="idMeat"
                 rownumbers="true" fitColumns="true" singleSelect="true">
             <thead>
                 <tr>
                     <th field="idMeat" width="15" hidden="true">ID</th>
-                    <th field="idBatch" width="15" hidden='true'>Batch</th>
+                    <th field="idBatch" width="15" hidden="true">Batch</th>
                     <th field="Name" width="50">Name</th>
                     <th field="Recipe" width="50">Recipe</th>
                     <th field="Culture" width="50">Culture</th>
@@ -149,16 +242,16 @@ include_once 'batch.php';
             </thead>
         </table>
 
-        <div id="toolbar">
-            <a href="#" class="easyui-linkbutton" iconCls="icon-add" plain="true" onclick="itemNew()">New Item</a>
-            <a href="#" class="easyui-linkbutton" iconCls="icon-edit" plain="true" onclick="itemEdit()">Edit Item</a>
-            <a href="#" class="easyui-linkbutton" iconCls="icon-remove" plain="true" onclick="itemRemove()">Remove Item</a>
+        <div id="toolbarItem">
+            <a href="#" class="easyui-linkbutton" iconCls="icon-add" plain="true" onclick="itemNew()">New</a>
+            <a href="#" class="easyui-linkbutton" iconCls="icon-edit" plain="true" onclick="itemEdit()">Edit</a>
+            <a href="#" class="easyui-linkbutton" iconCls="icon-remove" plain="true" onclick="itemRemove()">Delete</a>
         </div>
 
-        <div id="dlg" class="easyui-dialog" style="width:400px;height:280px;padding:10px 20px"
-                closed="true" buttons="#dlg-buttons">
+        <div id="dlgItem" class="easyui-dialog" style="width:400px;height:280px;padding:10px 20px"
+                closed="true" buttons="#dlgItem-buttons">
             <div class="ftitle">Item Information</div>
-            <form id="fm" method="post" novalidate>
+            <form id="fmItem" method="post" novalidate>
               <div class="fitem">
                 <label>Batch:</label>
                 <input name="idBatch">
@@ -181,13 +274,11 @@ include_once 'batch.php';
               </div>
             </form>
         </div>
-        <div id="dlg-buttons">
+        <div id="dlgItem-buttons">
             <a href="#" class="easyui-linkbutton" iconCls="icon-ok" onclick="itemSave()">Save</a>
-            <a href="#" class="easyui-linkbutton" iconCls="icon-cancel" onclick="javascript:$('#dlg').dialog('close')">Cancel</a>
+            <a href="#" class="easyui-linkbutton" iconCls="icon-cancel" onclick="javascript:$('#dlgItem').dialog('close')">Cancel</a>
         </div>
       </div>
-    
-      <div title="Debug"></div>
     </div>
   </body>
 </html>

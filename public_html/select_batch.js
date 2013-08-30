@@ -12,23 +12,6 @@ function selectBatchInit() {
   });
 } // end init
 
-//function getMeat(idBatch) {
-//  $.post('select_mysql.php', {cmd: 'meat', id: idBatch}, function(data) {
-//    $("div#selectBatch_output").append('<h2> Products for this Batch</h2>');
-//    for (row in data) {
-//      var meat = data[row];
-//      $("div#selectBatch_output").append('<dt> Name: ' + meat['Name'] + '</dt>');
-//      $("div#selectBatch_output").append('<dd> Recipe: ' + meat['Recipe'] + '</dd>');
-//      $("div#selectBatch_output").append('<dd> Culture: ' + meat['Culture'] + '</dd>');
-//      $("div#selectBatch_output").append('<dd> Mold: ' + meat['Mold'] + '</dd>');
-//    }
-//    $("div#selectBatch_output").append('</dl>');
-//  }, "json")
-//          .error(function(data) {
-//    $("div#selectBatch_output").append('<h2> No products in this batch</h2>');
-//  });
-//}
-
 function createBatch() {
   var batchName = $("input#createBatchName").val();
 
@@ -37,9 +20,6 @@ function createBatch() {
     url: 'insert_mysql.php',
     data: {cmd: 'createBatch', val: batchName},
     success: function(data) {
-//      var test = data;
-//      alert('Success: ' + data);
-//      $("div#batch_output").html("Success");
       selectBatchInit();
     },
     error: function(data) {

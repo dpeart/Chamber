@@ -5,7 +5,7 @@
 	$result = array();
     //TODO: pass in idBatch
     $idBatch = isset($_REQUEST['idBatch']) ? intval($_REQUEST['idBatch']) : -1;
-    //$idBatch = 6;
+    
     if ($idBatch != -1) {
       include 'conn.php';
 
