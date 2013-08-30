@@ -10,7 +10,7 @@ include 'conn.php';
 
 $mysqli = doDB();
 
-$sql = "update meat set Name='$name',Recipe='$recipe',Culture='$culture',Mold='$mold' where idMeat=$idMeat;";
+$sql = "update Meat set Name='$name',Recipe='$recipe',Culture='$culture',Mold='$mold' where idMeat=$idMeat;";
 $result = $mysqli->query($sql);
 if ($result){
 	echo json_encode(array('success'=>true));

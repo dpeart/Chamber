@@ -6,7 +6,7 @@ include 'conn.php';
 
 $mysqli = doDB();
 
-$sql = "delete from batch where idBatch='$id'";
+$sql = "delete from Batch where idBatch='$id'";
 $result = $mysqli->query($sql);
 
 if ($result){

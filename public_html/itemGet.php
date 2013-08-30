@@ -11,14 +11,14 @@
 
       $mysqli = doDB();
 
-      $query = "SELECT * from meat where idBatch=$idBatch";
+      $query = "SELECT * from Meat where idBatch=$idBatch";
       $res = $mysqli->query($query) or exit($mysqli->error);
 
       $result["total"] = $res->num_rows;
       $res->close();
 
       //$rs = mysql_query("select * from users limit $offset,$rows");
-      $query = "select * from meat where idBatch=$idBatch  limit  $offset,$rows";
+      $query = "select * from Meat where idBatch=$idBatch  limit  $offset,$rows";
       $res1 = $mysqli->query($query) or exit($mysqli->error);
 
       $items = array();

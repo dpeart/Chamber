@@ -10,7 +10,7 @@ include 'conn.php';
 
 $mysqli = doDB();
 
-$query = "INSERT INTO meat (idBatch, Name, Recipe, Culture, Mold) VALUES ('$batch','$name','$recipe','$culture','$mold');";
+$query = "INSERT INTO Meat (idBatch, Name, Recipe, Culture, Mold) VALUES ('$batch','$name','$recipe','$culture','$mold');";
 $result = $mysqli->query($query);
 
 if ($result){

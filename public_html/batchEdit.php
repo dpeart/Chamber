@@ -7,7 +7,7 @@ include 'conn.php';
 
 $mysqli = doDB();
 
-$sql = "update batch set Name='$name' where idBatch=$idBatch;";
+$sql = "update Batch set Name='$name' where idBatch=$idBatch;";
 $result = $mysqli->query($sql);
 if ($result){
 	echo json_encode(array('success'=>true));
