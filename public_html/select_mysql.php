@@ -1,6 +1,6 @@
 <?php
 
-include_once 'include.php';
+include_once 'conn.php';
 
 $cmd = $_POST['cmd'];
 

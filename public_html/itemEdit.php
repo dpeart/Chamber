@@ -8,9 +8,10 @@ $mold = $_REQUEST['Mold'];
 
 include 'conn.php';
 
+$mysqli = doDB();
+
 $sql = "update meat set Name='$name',Recipe='$recipe',Culture='$culture',Mold='$mold' where idMeat=$idMeat;";
-//$sql = "update users set firstname='$firstname',lastname='$lastname',phone='$phone',email='$email' where id=$id";
-$result = $conn->query($sql);
+$result = $mysqli->query($sql);
 if ($result){
 	echo json_encode(array('success'=>true));
 } else {

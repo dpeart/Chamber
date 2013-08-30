@@ -4,8 +4,10 @@ $id = intval($_REQUEST['id']);
 
 include 'conn.php';
 
+$mysqli = doDB();
+
 $sql = "delete from Meat where idMeat=$id";
-$result = $conn->query($sql);
+$result = $mysqli->query($sql);
 if ($result){
 	echo json_encode(array('success'=>true));
 } else {
