@@ -1,6 +1,6 @@
 <?php
 
-$idBatch = intval($_REQUEST['id']);
+$idBatch = intval($_REQUEST['idBatch']);
 $name = $_REQUEST['Name'];
 
 include 'conn.php';

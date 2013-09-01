@@ -29,13 +29,16 @@ include_once 'batch.php';
       $(document).ready(function() {
         // Tabs
         
-        $('#dgBatch').datagrid({
+        $('#dgBatch').edatagrid({
           onClickRow:function(rowIndex,row){
             currentBatch = row.idBatch;
             $('#dgItem').edatagrid({
               url:'itemGet.php?idBatch='+row.idBatch 
             });
             $('#dgItem').edatagrid('reload');	// reload the user data
+          },
+          onAfterEdit:function(rowIndex,row){
+            $('#dgBatch').edatagrid('reload');
           }
         });
         
@@ -46,138 +49,18 @@ include_once 'batch.php';
           destroyUrl: 'itemRemove.php'
         });
         
+        $('#dgBatch').edatagrid({
+          url: 'batchGet.php',
+          saveUrl: 'batchNew.php',
+          updateUrl: 'batchEdit.php',
+          destroyUrl: 'batchRemove.php'
+        });
+        
         $('#dgStatus').edatagrid({
           url: 'statusGet.php',
           updateUrl: 'statusEdit.php'
         });
       });    
-
-  /*    function itemNew(){
-        $('#dgItem').edatagrid('addRow');
-        $('#dgItem').edatagrid('addRow',{row:{idBatch:currentBatch}});
-        
-        $('#dlgItem').dialog('open').dialog('setTitle','New Item');
-        $('#fmItem').form('clear');
-        $('#fmItem').form('load',{
-            idBatch:currentBatch
-        });
-        url = 'itemNew.php';
-      }
-      
-      function itemEdit(){
-        var row = $('#dgItem').datagrid('getSelected');
-        if (row){
-          $('#dlgItem').dialog('open').dialog('setTitle','Edit Item');
-          $('#fmItem').form('load',row);
-          url = 'itemEdit.php?id='+row.idMeat;
-        }
-      }
-      
-      function itemSave(){
-        $('#fmItem').form('submit',{
-          url: url,
-          onSubmit: function(){
-            return $(this).form('validate');
-          },
-          success: function(result){
-            var result = eval('('+result+')');
-            if (result.success){
-              $('#dlgItem').dialog('close');		// close the dialog
-              $('#dgItem').datagrid('reload');	// reload the user data
-            } else {
-              $.messager.show({
-                title: 'Error',
-                msg: result.msg
-              });
-            }
-          }
-        });
-      }
-      
-      function itemRemove(){
-        var row = $('#dgItem').datagrid('getSelected');
-        if (row){
-          $.messager.confirm('Confirm','Are you sure you want to remove this user?',function(r){
-            if (r){
-              $.post('itemRemove.php', {id: row.idMeat}, function(result) {
-              if (result.success) {
-                $('#dgItem').datagrid('reload');	// reload the user data
-              } else {
-                $.messager.show({// show error message
-                  title: 'Error',
-                  msg: result.msg
-                });
-              }
-              }, 'json');
-            }
-          });
-        }
-      }
-      
-      function itemGet() {
-        currentBatch = $('select#selectBatchName').val();
-        $('#dgItem').datagrid({
-          url:'itemGet.php?idBatch='+currentBatch 
-        });
-        $('#dgItem').datagrid('reload');	// reload the user data
-      }
-      
-      function batchCreate() {
-        $('#dlgBatch').dialog('open').dialog('setTitle','New Batch');
-        $('#fmItem').form('clear');
-
-        url = 'batchNew.php';
-      }
-*/      
-      function batchRemove(){
-        var row = $('#dgBatch').datagrid('getSelected');
-        if (row){
-          $.messager.confirm('Confirm','Are you sure you want to remove this user?',function(r){
-            if (r){
-              $.post('batchRemove.php', {id: row.idBatch}, function(result) {
-              if (result.success) {
-                $('#dgBatch').datagrid('reload');	// reload the user data
-              } else {
-                $.messager.show({// show error message
-                  title: 'Error',
-                  msg: result.msg
-                });
-              }
-              }, 'json');
-            }
-          });
-        }
-      }
-      
-      function batchEdit(){
-        var row = $('#dgBatch').datagrid('getSelected');
-        if (row){
-          $('#dlgBatch').dialog('open').dialog('setTitle','Edit Batch');
-          $('#fmBatch').form('load',row);
-          url = 'batchEdit.php?id='+row.idBatch;
-        }
-      }
-      
-      function batchSave(){
-        $('#fmBatch').form('submit',{
-          url: url,
-          onSubmit: function(){
-            return $(this).form('validate');
-          },
-          success: function(result){
-            var result = eval('('+result+')');
-            if (result.success){
-              $('#dlgBatch').dialog('close');		// close the dialog
-              $('#dgBatch').datagrid('reload');	// reload the user data
-            } else {
-              $.messager.show({
-                title: 'Error',
-                msg: result.msg
-              });
-            }
-          }
-        });
-      }
     </script>
 
   </head>
@@ -190,7 +73,7 @@ include_once 'batch.php';
         </div>
 
         <table id="dgStatus" class="easyui-datagrid" style="width:750px" 
-          toolbar="#toolbarStatus" fitColumns="false" >
+          toolbar="#toolbarStatus" fitColumns="false">
           <thead>
             <tr>
               <th field="idStatus" hidden="true">ID</th>
@@ -220,21 +103,21 @@ include_once 'batch.php';
           <p> Batches
           <div id="batch_output"></div>
           <table id="dgBatch" class="easyui-datagrid" style="width:500px"
-            url="batchGet.php"
-            toolbar="#toolbarBatch" pagination="true"
+            toolbar="#toolbarBatch" pagination="true" idField="idBatch"
             rownumbers="true" fitColumns="true" singleSelect="true">
             <thead>
               <tr>
-                <th field="idBatch" width="15" hidden="true">ID</th>
-                <th field="Name" width="50">Name</th>
+                <th field="idBatch" width="15" >ID</th>
+                <th field="Name" width="50" editor="{type:'validatebox',options:{required:true}}">Name</th>
               </tr>            
             </thead>
           </table>      
           
           <div id="toolbarBatch">
-              <a href="#" class="easyui-linkbutton" iconCls="icon-add" plain="true" onclick="batchCreate()">New</a>
-              <a href="#" class="easyui-linkbutton" iconCls="icon-edit" plain="true" onclick="batchEdit()">Edit</a>
-              <a href="#" class="easyui-linkbutton" iconCls="icon-remove" plain="true" onclick="batchRemove()">Delete</a>
+            <a href="#" class="easyui-linkbutton" iconCls="icon-add" plain="true" onclick="javascript:$('#dgBatch').edatagrid('addRow')">New</a>
+            <a href="#" class="easyui-linkbutton" iconCls="icon-remove" plain="true" onclick="javascript:$('#dgBatch').edatagrid('destroyRow')">Delete</a>
+            <a href="#" class="easyui-linkbutton" iconCls="icon-save" plain="true" onclick="javascript:$('#dgBatch').edatagrid('saveRow')">Save</a>
+            <a href="#" class="easyui-linkbutton" iconCls="icon-undo" plain="true" onclick="javascript:$('#dgBatch').edatagrid('cancelRow')">Cancel</a>
           </div>
 
           <div id="dlgBatch" class="easyui-dialog" style="width:400px;height:280px;padding:10px 20px"
@@ -261,7 +144,7 @@ include_once 'batch.php';
             <thead>
                 <tr>
                     <th field="idMeat" width="15" hidden="true">ID</th>
-                    <th field="idBatch" width="15" hidden="true">Batch</th>
+                    <th field="idBatch" width="15" >Batch</th>
                     <th field="Name" width="50" editor="{type:'validatebox',options:{required:true}}">Name</th>
                     <th field="Recipe" width="50" editor='text'>Recipe</th>
                     <th field="Culture" width="50" editor='text'>Culture</th>

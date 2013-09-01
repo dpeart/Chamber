@@ -1,12 +1,12 @@
 <?php
 
-$id = intval($_REQUEST['id']);
+$idBatch = intval($_REQUEST['id']);
 
 include 'conn.php';
 
 $mysqli = doDB();
 
-$sql = "delete from Batch where idBatch='$id'";
+$sql = "delete from Batch where idBatch='$idBatch'";
 $result = $mysqli->query($sql);
 
 if ($result){
