@@ -18,10 +18,9 @@ include_once 'batch.php';
     <script src="http://www.flotcharts.org/flot/jquery.flot.time.js"></script>
     <script src="http://www.flotcharts.org/flot/jquery.flot.selection.js"></script>
     <script src="select_batch.js"></script>
-
-
-	<script type="text/javascript" src="http://www.jeasyui.com/easyui/jquery.easyui.min.js"></script>
-    
+    <script type="text/javascript" src="http://www.jeasyui.com/easyui/jquery.easyui.min.js"></script>
+	<script type="text/javascript" src="http://www.jeasyui.com/easyui/jquery.edatagrid.js"></script>
+	 
     <script type="text/javascript">    
       var overview, chart, options, overviewoptions;
       var currentBatch;
@@ -29,22 +28,34 @@ include_once 'batch.php';
       
       $(document).ready(function() {
         // Tabs
-        $("#tabs").tabs({
-          beforeLoad: selectBatchInit()
-        }); 
         
         $('#dgBatch').datagrid({
           onClickRow:function(rowIndex,row){
             currentBatch = row.idBatch;
-            $('#dgItem').datagrid({
+            $('#dgItem').edatagrid({
               url:'itemGet.php?idBatch='+row.idBatch 
             });
-            $('#dgItem').datagrid('reload');	// reload the user data
+            $('#dgItem').edatagrid('reload');	// reload the user data
           }
-        });       
-      });     
+        });
+        
+        $('#dgItem').edatagrid({
+          url: 'itemGet.php?idBatch='+currentBatch,
+          saveUrl: 'itemNew.php',
+          updateUrl: 'itemEdit.php',
+          destroyUrl: 'itemRemove.php'
+        });
+        
+        $('#dgStatus').edatagrid({
+          url: 'statusGet.php',
+          updateUrl: 'statusEdit.php'
+        });
+      });    
 
-      function itemNew(){
+  /*    function itemNew(){
+        $('#dgItem').edatagrid('addRow');
+        $('#dgItem').edatagrid('addRow',{row:{idBatch:currentBatch}});
+        
         $('#dlgItem').dialog('open').dialog('setTitle','New Item');
         $('#fmItem').form('clear');
         $('#fmItem').form('load',{
@@ -82,6 +93,7 @@ include_once 'batch.php';
           }
         });
       }
+      
       function itemRemove(){
         var row = $('#dgItem').datagrid('getSelected');
         if (row){
@@ -116,7 +128,7 @@ include_once 'batch.php';
 
         url = 'batchNew.php';
       }
-      
+*/      
       function batchRemove(){
         var row = $('#dgBatch').datagrid('getSelected');
         if (row){
@@ -177,28 +189,31 @@ include_once 'batch.php';
           <div id="overview_graph" class="overview-placeholder"></div>
         </div>
 
-        <table id="dgStatus" class="easyui-datagrid" style="width:750px"
-          url="statusGet.php" 
-          fitcolumns="true">
+        <table id="dgStatus" class="easyui-datagrid" style="width:750px" 
+          toolbar="#toolbarStatus" fitColumns="false" >
           <thead>
             <tr>
               <th field="idStatus" hidden="true">ID</th>
-              <th field="idBatch"">Batch</th>
-              <th field="Temp Setpoint">Temp</th>
-              <th field="Humidity Setpoint">Humidity</th>
-              <th field="Store Readings">Store Readings</th>
-              <th field="PID H Kp">H-Kp</th>
-              <th field="PID H Ki">H-Kp</th>
-              <th field="PID H Kd">H-Kp</th>
-              <th field="PID T Kp">T-Kp</th>
-              <th field="PID T Ki">T-Ki</th>
-              <th field="PID T Kd"T-Kd</th>
-              <th field="Sensor Read Timeout">Sensor Read<br>Timeout</th>
-              <th field="Window Size">Window Size</th>
-              <th field="Sample Delay">Sample Delay</th>
+              <th field="idBatch" editor="{type:'numberbox'}">Batch</th>
+              <th field="Temp Setpoint" editor="{type:'numberbox'}">Temp</th>
+              <th field="Humidity Setpoint" editor="{type:'numberbox'}">Humidity</th>
+              <th field="Store Readings" editor="{type:'numberbox'}">Store Readings</th>
+              <th field="PID H Kp" editor="{type:'numberbox'}">H-Kp</th>
+              <th field="PID H Ki" editor="{type:'numberbox'}">H-Kp</th>
+              <th field="PID H Kd" editor="{type:'numberbox'}">H-Kp</th>
+              <th field="PID T Kp" editor="{type:'numberbox'}">T-Kp</th>
+              <th field="PID T Ki" editor="{type:'numberbox'}">T-Ki</th>
+              <th field="PID T Kd" editor="{type:'numberbox'}">T-Kd</th>
+              <th field="Sensor Read Timeout" editor="{type:'numberbox'}">Sensor Read<br>Timeout</th>
+              <th field="Window Size" editor="{type:'numberbox'}">Window Size</th>
+              <th field="Sample Delay" editor="{type:'numberbox'}">Sample Delay</th>
             </tr>
           </thead>
         </table>
+        <div id="toolbarStatus">
+          <a href="#" class="easyui-linkbutton" iconCls="icon-save" plain="true" onclick="javascript:$('#dgStatus').edatagrid('saveRow')">Save</a>
+          <a href="#" class="easyui-linkbutton" iconCls="icon-undo" plain="true" onclick="javascript:$('#dgStatus').edatagrid('cancelRow')">Cancel</a>
+        </div>	
       </div>
 
       <div title="Admin">
@@ -247,50 +262,19 @@ include_once 'batch.php';
                 <tr>
                     <th field="idMeat" width="15" hidden="true">ID</th>
                     <th field="idBatch" width="15" hidden="true">Batch</th>
-                    <th field="Name" width="50">Name</th>
-                    <th field="Recipe" width="50">Recipe</th>
-                    <th field="Culture" width="50">Culture</th>
-                    <th field="Mold" width="50">Mold</th>
+                    <th field="Name" width="50" editor="{type:'validatebox',options:{required:true}}">Name</th>
+                    <th field="Recipe" width="50" editor='text'>Recipe</th>
+                    <th field="Culture" width="50" editor='text'>Culture</th>
+                    <th field="Mold" width="50" editor='text'>Mold</th>
                 </tr>
             </thead>
         </table>
-
         <div id="toolbarItem">
-            <a href="#" class="easyui-linkbutton" iconCls="icon-add" plain="true" onclick="itemNew()">New</a>
-            <a href="#" class="easyui-linkbutton" iconCls="icon-edit" plain="true" onclick="itemEdit()">Edit</a>
-            <a href="#" class="easyui-linkbutton" iconCls="icon-remove" plain="true" onclick="itemRemove()">Delete</a>
-        </div>
-
-        <div id="dlgItem" class="easyui-dialog" style="width:400px;height:280px;padding:10px 20px"
-                closed="true" buttons="#dlgItem-buttons">
-            <div class="ftitle">Item Information</div>
-            <form id="fmItem" method="post" novalidate>
-              <div class="fitem">
-                <label>Batch:</label>
-                <input name="idBatch">
-              </div>
-              <div class="fitem">
-                  <label>Name:</label>
-                  <input name="Name" class="easyui-validatebox" required="true">
-              </div>
-              <div class="fitem">
-                  <label>Recipe:</label>
-                  <input name="Recipe">
-              </div>
-              <div class="fitem">
-                  <label>Culture:</label>
-                  <input name="Culture">
-              </div>
-              <div class="fitem">
-                  <label>Mold:</label>
-                  <input name="Mold">
-              </div>
-            </form>
-        </div>
-        <div id="dlgItem-buttons">
-            <a href="#" class="easyui-linkbutton" iconCls="icon-ok" onclick="itemSave()">Save</a>
-            <a href="#" class="easyui-linkbutton" iconCls="icon-cancel" onclick="javascript:$('#dlgItem').dialog('close')">Cancel</a>
-        </div>
+          <a href="#" class="easyui-linkbutton" iconCls="icon-add" plain="true" onclick="javascript:$('#dgItem').edatagrid('addRow',{row:{idBatch:currentBatch}})">New</a>
+          <a href="#" class="easyui-linkbutton" iconCls="icon-remove" plain="true" onclick="javascript:$('#dgItem').edatagrid('destroyRow')">Delete</a>
+          <a href="#" class="easyui-linkbutton" iconCls="icon-save" plain="true" onclick="javascript:$('#dgItem').edatagrid('saveRow')">Save</a>
+          <a href="#" class="easyui-linkbutton" iconCls="icon-undo" plain="true" onclick="javascript:$('#dgItem').edatagrid('cancelRow')">Cancel</a>
+        </div>	
       </div>
     </div>
   </body>

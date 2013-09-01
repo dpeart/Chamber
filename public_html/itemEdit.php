@@ -1,6 +1,6 @@
 <?php
 
-$idMeat = intval($_REQUEST['id']);
+$idMeat = intval($_REQUEST['idMeat']);
 $name = $_REQUEST['Name'];
 $recipe= $_REQUEST['Recipe'];
 $culture = $_REQUEST['Culture'];
