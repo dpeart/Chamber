@@ -1,0 +1,170 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <title>Flot Examples: Real-time updates</title>
+  <link href="../flot/examples/examples.css" rel="stylesheet" type="text/css">
+  <link rel="stylesheet" href="http://code.jquery.com/ui/1.10.2/themes/smoothness/jquery-ui.css" />
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.0/jquery.min.js"></script>
+  <script src="http://code.jquery.com/ui/1.10.2/jquery-ui.js"></script>
+  <script src="http://www.flotcharts.org/flot/jquery.flot.js"></script>
+  <script src="http://www.flotcharts.org/flot/jquery.flot.crosshair.js"></script>
+  <script src="http://www.flotcharts.org/flot/jquery.flot.time.js"></script>
+  <script src="http://www.flotcharts.org/flot/jquery.flot.selection.js"></script>
+  <script language="javascript" type="text/javascript" src="jquery.flot.downsample.js"></script>
+  <script type="text/javascript">
+    // We use an inline data source in the example, usually data would
+    // be fetched from a server
+
+ //   var data = [],
+  var finalData = [],
+      lastReadings = 0;
+
+//        finalData = [{
+//            "label": "test", 
+//            "data": [[1377747689000,31.0000],[1377747692000,31.0000],[1377747695000,31.0000],[1377747699000,30.8000],[1377792055000,88.5200],[1377792058000,88.7000],[1377792062000,88.7000],[1377792088000,88.5200],[1377792093000,88.7000],[1377792096000,88.5200]]
+//          }
+//        ];
+
+
+    function getReadings(offset,numRows) {
+      $.ajax({
+        type: 'POST',
+        url: 'getData.php',
+        data: {offset: offset, numRows: numRows},
+        dataType: 'json',
+        success: function(data) {
+          //Save the last successful readings query
+          lastReadings = parseInt(Date.now() / 1000);
+          finalData = data;
+        },
+        error: function(data) {
+          var test = data;
+          alert('Error: getReadings Failed' + data);
+        },
+       async: true
+      });
+    }
+
+    // Set up the control widget
+
+    var updateInterval = 5000;
+    $("#updateInterval").val(updateInterval).change(function () {
+        var v = $(this).val();
+        if (v && !isNaN(+v)) {
+            updateInterval = +v;
+            if (updateInterval < 1) {
+                updateInterval = 1;
+            } else if (updateInterval > 2000) {
+                updateInterval = 2000;
+            }
+            $(this).val("" + updateInterval);
+        }
+    });
+
+//        yaxes: [ { }, { position: "right", min: 0, max: 100 } ],
+    var graphOpts = {
+        legend: { show: true },
+        canvas: false,
+        series: {
+            lines: { show: true, lineWidth: 2 },
+            points: { show: false, symbol: "circle", radius: 1, fill: false },
+            shadowSize: 4,
+            downsample: {threshold: 0}
+        },
+        xaxis: { show: true, mode: "time", timezone: "browser",
+          font: { color: "#ccc" } },
+        yaxis: { show: true, ticks: 10, font: { color: "#ccc" } },
+        grid: { clickable: true, hoverable: true, color: "#ccc",
+          borderColor: "#545454" },
+        selection: {mode: "x"}    
+    };
+    
+    var graphOpts2 = {
+        legend: { show: false },
+        canvas: false,
+        series: {
+            lines: { show: true, lineWidth: 1 },
+            points: { show: false },
+            shadowSize: 0,
+            downsample: {threshold: 2100 }
+        },
+        xaxis: { mode: "time" },
+        yaxis: { show: false },
+        grid: { clickable: false, color: "#ccc", borderColor: "#545454" },
+        selection: { mode: "x" }
+    };
+    
+
+  $(function() {
+    lastReadings = parseInt(Date.now() / 1000);
+    getReadings(0,100);
+
+    var plotOverview = $.plot("#graph_overview", finalData , graphOpts2);
+    var plotGraph = $.plot("#graph", finalData , graphOpts);
+        
+        $("#graph").bind("plotselected", function (event, ranges) {
+ 
+          // do the zooming
+          
+          plotGraph = $.plot("#graph", finalData , $.extend(true, {}, graphOpts, {
+              xaxis: {
+                  min: ranges.xaxis.from,
+                  max: ranges.xaxis.to
+              }
+          }));
+          //don't fire event on the overview to prevent eternal loop
+          plotOverview.setSelection(ranges,true);
+        });
+        
+        $("#graph_overview").bind("plotselected", function (event, ranges) {
+          plotGraph.setSelection(ranges);
+        });
+        
+       function update() {
+         //Offset needs to be lastReadings
+            getReadings(0,100);
+			plotOverview.setData(finalData);
+			plotGraph.setData(finalData);
+
+			// Since the axes don't change, we don't need to call plot.setupGrid()
+
+			plotOverview.draw();
+			plotGraph.draw();
+            setTimeout(update, updateInterval);
+		}
+
+		update();
+
+		// Add the Flot version string to the footer
+
+		$("#footer").prepend("Flot " + $.plot.version + " &ndash; ");
+	});
+
+	</script>
+</head>
+<body>
+
+	<div id="header">
+		<h2>Real-time updates</h2>
+	</div>
+
+	<div id="content">
+
+		<div class="demo-container">
+          <div id="graph" style="height: 350px; width: 700px; margin: 8px auto 0px auto;"></div>
+          <div id="graph_overview" style="height: 90px; width: 700px; margin-left: auto; margin-right: auto;"></div>
+		</div>
+
+		<p>You can update a chart periodically to get a real-time effect by using a timer to insert the new data in the plot and redraw it.</p>
+
+		<p>Time between updates: <input id="updateInterval" type="text" value="" style="text-align: right; width:5em"> milliseconds</p>
+
+	</div>
+
+	<div id="footer">
+		Copyright &copy; 2007 - 2013 IOLA and Ole Laursen
+	</div>
+
+</body>
+</html>
