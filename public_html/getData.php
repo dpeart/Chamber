@@ -29,7 +29,7 @@ foreach($res as $r)
 }
  $res->close();
 //send our data values to $mergedData, add in your custom label and color
-//$mergedData[] =  array('label' => "IntTemp" , 'data' => $data1, 'color' => '#6bcadb');
+$mergedData[] =  array('label' => "IntTemp" , 'data' => $data1, 'color' => '#6bcadb');
  
 //Get the second set of data you want to graph from the database
 $query = "SELECT `idReadings`,`External Temperature` FROM Chamber.Readings WHERE idReadings >= $offset;";
@@ -47,8 +47,10 @@ foreach($res as $r)
 $res->close(); 
 //send our data values to $mergedData, add in your custom label and color
 $mergedData[] = array('label' => "ExtTemp" , 'data' => $data2);
- 
- 
-//now we can JSON encode our data
+$mergedData[] = array('lastReadings'=>  time());
+
 echo json_encode($mergedData);
+
+//now we can JSON encode our data
+//echo json_encode($mergedData);
 ?>

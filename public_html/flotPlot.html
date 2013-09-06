@@ -23,20 +23,42 @@
 //        finalData = [{
 //            "label": "test", 
 //            "data": [[1377747689000,31.0000],[1377747692000,31.0000],[1377747695000,31.0000],[1377747699000,30.8000],[1377792055000,88.5200],[1377792058000,88.7000],[1377792062000,88.7000],[1377792088000,88.5200],[1377792093000,88.7000],[1377792096000,88.5200]]
+//          },
+//          {
+//            "label": "test2", 
+//            "data": [[1377747689000,61.0000],[1377747692000,61.0000],[1377747695000,61.0000],[1377747699000,60.8000],[1377792055000,108.5200],[1377792058000,108.7000],[1377792062000,108.7000],[1377792088000,108.5200],[1377792093000,88.7000],[1377792100000,108.5200]]
 //          }
-//        ];
+//       ];
 
+  $(function() {
 
     function getReadings(offset,numRows) {
+      var series = [];
       $.ajax({
         type: 'POST',
         url: 'getData.php',
         data: {offset: offset, numRows: numRows},
         dataType: 'json',
         success: function(data) {
-          //Save the last successful readings query
-          lastReadings = parseInt(Date.now() / 1000);
-          finalData = data;
+          j = 0;
+            //Save the last successful readings query
+          for(var i in data) {
+
+            if (data[i].label) {
+              finalData[j++] = data[i];
+            }
+            if (data[i].lastReadings) {
+              lastReadings = data[i].lastReadings * 1000;
+            }
+          }
+          plotOverview.setData(finalData);
+          plotGraph.setData(finalData);
+          
+          plotGraph.setupGrid();
+          plotOverview.setupGrid();
+          
+          plotOverview.draw();
+          plotGraph.draw();
         },
         error: function(data) {
           var test = data;
@@ -89,17 +111,14 @@
             shadowSize: 0,
             downsample: {threshold: 2100 }
         },
-        xaxis: { mode: "time" },
+        xaxis: { mode: "time", timezone: "browser" },
         yaxis: { show: false },
         grid: { clickable: false, color: "#ccc", borderColor: "#545454" },
         selection: { mode: "x" }
     };
     
 
-  $(function() {
-    lastReadings = parseInt(Date.now() / 1000);
-    getReadings(0,100);
-
+    //getReadings(4,1000);
     var plotOverview = $.plot("#graph_overview", finalData , graphOpts2);
     var plotGraph = $.plot("#graph", finalData , graphOpts);
         
@@ -123,14 +142,14 @@
         
        function update() {
          //Offset needs to be lastReadings
-            getReadings(0,100);
-			plotOverview.setData(finalData);
-			plotGraph.setData(finalData);
+            getReadings(10000,10000);
+//			plotOverview.setupGrid(finalData);
+//			plotGraph.setupGrid(finalData);
 
 			// Since the axes don't change, we don't need to call plot.setupGrid()
 
-			plotOverview.draw();
-			plotGraph.draw();
+//			plotOverview.draw();
+//			plotGraph.draw();
             setTimeout(update, updateInterval);
 		}
 
