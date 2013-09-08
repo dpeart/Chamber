@@ -4,9 +4,8 @@
 	<link rel="stylesheet" type="text/css" href="http://www.jeasyui.com/easyui/themes/icon.css">
 	<link rel="stylesheet" type="text/css" href="http://www.jeasyui.com/easyui/demo/demo.css">
     <link rel='stylesheet' type='text/css' href='styles.css'>
-    <link rel="stylesheet" href="http://code.jquery.com/ui/1.10.2/themes/smoothness/jquery-ui.css" />
-    <script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.0/jquery.min.js"></script>
-    <script src="http://code.jquery.com/ui/1.10.2/jquery-ui.js"></script>
+    <link rel="stylesheet" href="http://code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css" />
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.2/jquery.min.js"></script>
     <script src="http://www.flotcharts.org/flot/jquery.flot.js"></script>
     <script src="http://www.flotcharts.org/flot/jquery.flot.crosshair.js"></script>
     <script src="http://www.flotcharts.org/flot/jquery.flot.time.js"></script>
@@ -20,11 +19,9 @@
       var currentBatch;
       var url;     
       
-      $(document).ready(function() {
-        // Tabs
-        
+      $(document).ready(function() { 
         $('#dgBatch').edatagrid({
-          onClickRow:function(rowIndex,row){
+          onSelect:function(rowIndex,row){
             currentBatch = row.idBatch;
             $('#dgItem').edatagrid({
               url:'itemGet.php?idBatch='+row.idBatch 
@@ -54,13 +51,32 @@
           url: 'statusGet.php',
           updateUrl: 'statusEdit.php'
         });
-      });    
+        
+        $('#tabs').tabs({
+          onSelect: function(title) {
+            if (title === "Admin") {                       
+              // After loading Status select current batch in #dgBatch
+              var rows = $('#dgStatus').edatagrid('getRows');
+              if (rows) {
+                var currentBatch = rows[0].idBatch;                
+              }
+              rows = $('#dgBatch').edatagrid('getRows');
+              for(var i in rows) {
+                if (currentBatch === rows[i].idBatch) {
+                  $('#dgBatch').edatagrid('selectRow', i);
+                }
+              }
+            }
+          }
+       });
+      });
+
     </script>
 
   </head>
   <body>
     <div class="easyui-tabs" id="tabs">         
-      <div Title= "Home">
+      <div Title= "Home" >
        <div class="demo-container">
           <div id="current_graph" class="demo-placeholder"></div>
           <div id="overview_graph" class="overview-placeholder"></div>
@@ -93,7 +109,7 @@
         </div>	
       </div>
 
-      <div title="Admin">
+      <div Title="Admin">
           <p> Batches
           <div id="batch_output"></div>
           <table id="dgBatch" class="easyui-datagrid" style="width:500px"
@@ -101,7 +117,7 @@
             rownumbers="true" fitColumns="true" singleSelect="true">
             <thead>
               <tr>
-                <th field="idBatch" width="15" >ID</th>
+                <th field="idBatch" width="15" >idBatch</th>
                 <th field="Name" width="50" editor="{type:'validatebox',options:{required:true}}">Name</th>
               </tr>            
             </thead>
@@ -121,12 +137,30 @@
                 rownumbers="true" fitColumns="true" singleSelect="true">
             <thead>
                 <tr>
-                    <th field="idMeat" width="15" hidden="true">ID</th>
-                    <th field="idBatch" width="15" >Batch</th>
-                    <th field="Name" width="50" editor="{type:'validatebox',options:{required:true}}">Name</th>
-                    <th field="Recipe" width="50" editor='text'>Recipe</th>
-                    <th field="Culture" width="50" editor='text'>Culture</th>
-                    <th field="Mold" width="50" editor='text'>Mold</th>
+                    <th rowspan="2" field="idMeat" hidden="true" >idMeat</th>
+                    <th rowspan="2" field="idBatch" width="15" hidden="true">idBatch</th>
+                    <th rowspan="2" field="Name" width="15" editor="{type:'validatebox',options:{required:true}}">Name</th>
+                    <th rowspan="2" field="Recipe" width="15" editor='text'>Recipe</th>
+                    <th rowspan="2" field="Culture" width="15" editor='text'>Culture</th>
+                    <th rowspan="2" field="Mold" width="15" editor='text'>Mold</th> 
+                    <th rowspan="2" field="idFermentation" width="15" hidden="true">idFermentation</th>
+                    <th rowspan="2" field="idDrying" width="15" hidden="true">idDrying</th>
+                    <th colspan="6">Fermentation</th>
+                    <th colspan="6">Drying</th>
+                </tr>
+                <tr>
+                    <th field="FSW" width="5" editor='text'>Start<br> Weight</th>
+                    <th field="FEW" width="5" editor='text'>End<br> Weight</th>
+                    <th field="FSPH" width="5" editor='text'>Start<br> PH</th>
+                    <th field="FEPH" width="5" editor='text'>End<br> PH</th>
+                    <th field="FSD" width="5" editor='text'>Start<br> Diameter</th>
+                    <th field="FED" width="5" editor='text'>End<br> Diameter</th>
+                    <th field="DSW" width="15" editor='text'>Start<br> Weight</th>
+                    <th field="DEW" width="5" editor='text'>End<br> Weight</th>
+                    <th field="DSPH" width="5" editor='text'>Start<br> PH</th>
+                    <th field="DEPH" width="5" editor='text'>End<br> PH</th>
+                    <th field="DSD" width="5" editor='text'>Start<br> Diameter</th>
+                    <th field="DED" width="5" editor='text'>End<br> Diameter</th>
                 </tr>
             </thead>
         </table>
