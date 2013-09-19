@@ -1,3 +1,7 @@
+#graphtt { display: none; position: absolute; border: 1px solid #89c; background: #eef;
+    opacity: 0.9; padding: 2px; color: #003; pointer-events: none; }
+#graphtt_title { color: #fff; border: 1px solid #008; background-color: #357; }
+
 h1 {
   font-family:"Georgia";
   color:orange;
