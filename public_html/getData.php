@@ -14,7 +14,7 @@ if ($numRows == -1) {
 
 //$query = "SELECT  FROM Readings WHERE idReadings;";
 //echo json_encode($offset);
-$query = "SELECT `idReadings`,`Internal Temperature` FROM Chamber.Readings WHERE idReadings >= $offset;";
+$query = "SELECT `idReadings`,`Internal Temperature` FROM Chamber.Readings WHERE idReadings > $offset;";
 //$query = "SELECT `idReadings`,`Internal Temperature` FROM Chamber.Readings LIMIT $offset, $numRows;";
 
 //echo json_encode($query);
@@ -24,21 +24,26 @@ $res = $mysqli->query($query) or exit($mysqli->error);
 if ($res) {
   //If there are no rows returned, then don't return any data
   if ($res->num_rows) {
+    $lasty = -99999;
     foreach($res as $r)
     {
       $x = intval($r['idReadings']) * 1000;
       $y = floatval($r['Internal Temperature']);
-      $data1[] = array ($x, $y);
+      if ($lasty != $y) 
+      {
+        $data1[] = array ($x, $y);
+        $lasty = $y;
+      }
     }
-     $res->close();
+    $res->close();
     //send our data values to $mergedData, add in your custom label and color
-     // yaxis: 1 is temperature, yasis: 2 is percentage
+    // yaxis: 1 is temperature, yasis: 2 is percentage
     $mergedData[] =  array('label' => "IntTemp" , 'data' => $data1);
   }
 }
  
 //Get the second set of data you want to graph from the database
-$query = "SELECT `idReadings`,`External Temperature` FROM Chamber.Readings WHERE idReadings >= $offset;";
+$query = "SELECT `idReadings`,`External Temperature` FROM Chamber.Readings WHERE idReadings > $offset;";
 //$query = "SELECT `idReadings`,`External Temperature` FROM Chamber.Readings LIMIT $offset, $numRows;";
 //echo json_encode($query);
 $res = $mysqli->query($query) or exit($mysqli->error);
@@ -46,11 +51,15 @@ $res = $mysqli->query($query) or exit($mysqli->error);
 if ($res) {
   //If there are no rows returned, then don't return any data
   if ($res->num_rows) {
+    $lasty = -99999;
     foreach($res as $r) {
       // Convert from seconds to miliseconds for Flot
       $x = intval($r["idReadings"]) * 1000;
       $y = floatval($r["External Temperature"]);
-      $data2[] = array ($x, $y);
+      if ($lasty != $y) 
+      {
+        $data2[] = array ($x, $y);
+      }
     }
     $res->close(); 
     //send our data values to $mergedData, add in your custom label and color
@@ -60,7 +69,7 @@ if ($res) {
 
 //$query = "SELECT  FROM Readings WHERE idReadings;";
 //echo json_encode($offset);
-$query = "SELECT `idReadings`,`Internal Humidity` FROM Chamber.Readings WHERE idReadings >= $offset;";
+$query = "SELECT `idReadings`,`Internal Humidity` FROM Chamber.Readings WHERE idReadings > $offset;";
 //$query = "SELECT `idReadings`,`Internal Humidity` FROM Chamber.Readings LIMIT $offset, $numRows;";
 
 //echo json_encode($query);
@@ -69,12 +78,16 @@ $res = $mysqli->query($query) or exit($mysqli->error);
 if ($res) {
   //If there are no rows returned, then don't return any data
   if ($res->num_rows) {
+    $lasty = -99999;
     //loop through the first set of data and pull out the values we want, then format
     foreach($res as $r)
     {
       $x = intval($r['idReadings']) * 1000;
       $y = floatval($r['Internal Humidity']);
-      $data3[] = array ($x, $y);
+      if ($lasty != $y) 
+      {
+        $data3[] = array ($x, $y);
+      }
     }
     $res->close();
     //send our data values to $mergedData, add in your custom label and color
@@ -82,7 +95,7 @@ if ($res) {
   }
 }
 //Get the second set of data you want to graph from the database
-$query = "SELECT `idReadings`,`External Humidity` FROM Chamber.Readings WHERE idReadings >= $offset;";
+$query = "SELECT `idReadings`,`External Humidity` FROM Chamber.Readings WHERE idReadings > $offset;";
 //$query = "SELECT `idReadings`,`External Humidity` FROM Chamber.Readings LIMIT $offset, $numRows;";
 //echo json_encode($query);
 $res = $mysqli->query($query) or exit($mysqli->error);
@@ -90,12 +103,16 @@ $res = $mysqli->query($query) or exit($mysqli->error);
 if ($res) {
   //If there are no rows returned, then don't return any data
   if ($res->num_rows) {
+    $lasty = -99999;
     foreach($res as $r)
     {
       // Convert from seconds to miliseconds for Flot
       $x = intval($r['idReadings']) * 1000;
       $y = floatval($r['External Humidity']);
-      $data4[] = array ($x, $y);
+      if ($lasty != $y) 
+      {
+        $data4[] = array ($x, $y);
+      }
     }
     $res->close(); 
     //send our data values to $mergedData, add in your custom label and color
@@ -104,7 +121,7 @@ if ($res) {
 }
 
 //Get the second set of data you want to graph from the database
-$query = "SELECT `idReadings`,`PID T Output` FROM Chamber.Readings WHERE idReadings >= $offset;";
+$query = "SELECT `idReadings`,`PID T Output` FROM Chamber.Readings WHERE idReadings > $offset;";
 //$query = "SELECT `idReadings`,`PID T Output` FROM Chamber.Readings LIMIT $offset, $numRows;";
 //echo json_encode($query);
 $res = $mysqli->query($query) or exit($mysqli->error);
@@ -112,12 +129,16 @@ $res = $mysqli->query($query) or exit($mysqli->error);
 if ($res) {
   //If there are no rows returned, then don't return any data
   if ($res->num_rows) {
+    $lasty = -99999;
     foreach($res as $r)
     {
       // Convert from seconds to miliseconds for Flot
       $x = intval($r['idReadings']) * 1000;
       $y = floatval($r['PID T Output']);
-      $data5[] = array ($x, $y);
+      if ($lasty != $y) 
+      {
+        $data5[] = array ($x, $y);
+      }
     }
     $res->close(); 
     //send our data values to $mergedData, add in your custom label and color

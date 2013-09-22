@@ -6,6 +6,7 @@
     <script src="http://www.flotcharts.org/flot/jquery.flot.time.js"></script>
     <script src="http://www.flotcharts.org/flot/jquery.flot.selection.js"></script>
     <script language="javascript" type="text/javascript" src="jquery.flot.downsample.js"></script>
+<!--    <script language="javascript" type="text/javascript" src="jquery.flot.spline.js"></script>-->
     <script src="select_batch.js"></script>
     <script src="plot.js"></script>
     <script type="text/javascript" src="http://www.jeasyui.com/easyui/jquery.easyui.min.js"></script>
@@ -81,12 +82,12 @@
       <div Title= "Home" >
        <div class="demo-container">
         <div id="graph" style="height: 350px; width: 700px; margin: 8px auto 0px auto;"></div>
-        <div id="graph_overview" style="height: 90px; width: 700px; margin-left: auto; margin-right: auto;"></div>
+        <div id="graphOverview" style="height: 90px; width: 700px; margin-left: auto; margin-right: auto;"></div>
       </div>
       <div id="graphtt">
         <div id="graphtt_title"></div>
         <div id="graphtt_content"></div>
-       <!-- <img id="graphtt_arrow" src="<%=resource%>/ttarrow.png" style="position: absolute; left: 0; top: 0;">-->
+        <img id="graphtt_arrow" src="ttarrow.png" style="position: absolute; left: 0; top: 0;">
       </div>
         <div id="content">
           <p>Time between updates: <input id="updateInterval" type="text" value="" style="text-align: right; width:5em"> milliseconds</p>

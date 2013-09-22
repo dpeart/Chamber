@@ -1,9 +1,10 @@
 var graphData = [],
     lastReadings = 0,
-    graphDataSize = 1000,
+    graphDataSize = 500000,
     lastGraphHover = 0,
-    plotGraph,
-    plotOverview;
+    lastPlot, 
+    lastOverviewPlot,
+    sqlRequestPending = 0;
 
 var graphData = [
         { label: "IntTemp", color: "#297", lines: { show: true }, data: [] },
@@ -13,33 +14,116 @@ var graphData = [
         { label: "PID_T_Output", color: "#6cf", lines: { lineWidth: 1, fill: true }, shadowSize: 0, yaxis: 2, data: [] } 
     ];
 
+var graphOpts = {
+    legend: { show: true, position: "nw" },
+    canvas: false,
+    series: {
+        lines: { show: true, lineWidth: 2 },
+        points: { show: false, symbol: "circle", radius: 1, fill: false },
+        shadowSize: 4
+    },
+    xaxis: { show: true, mode: "time", timezone: "browser",
+      font: { color: "#ccc" } },
+    yaxis: { show: true, ticks: 10, minTickSize: 0.5, font: { color: "#ccc" } },
+    yaxes: [ { }, { position: "right", min: 0, max: 100 } ],
+    grid: { clickable: true, hoverable: true, color: "#ccc",
+      borderColor: "#545454" }
+};
+
+
+
+var graphOpts2 = {
+    legend: { show: false },
+    canvas: false,
+    series: {
+        lines: { show: true, lineWidth: 1 },
+        points: { show: false },
+        shadowSize: 0,
+        downsample: {threshold: 500 }
+    },
+    xaxis: graphOpts.xaxis,
+    yaxis: { show: false },
+    yaxes: graphOpts.yaxes,
+    grid: { clickable: false, color: "#ccc", borderColor: "#545454" },
+    selection: { mode: "x" }
+};
+
+$(function() { 
+  //  graphOpts.legend.container = $("#graph_legend");
+  $("#graphOverview").bind("plotselected", overviewSelected);
+  $("#graphOverview").bind("plotunselected", overviewUnselected);
+  $("#graphtt").click(graphttClicked);
+  $("#rangeselect").change(getReadings);
+  $("#graph").bind("plotclick", graphClicked);
+  $("#graph").bind("plothover", graphHover);
+  $("#graph").mouseout(function () { $("#graphtt").fadeOut(); });
+//  $("div.legfill").click(legendClicked);
+//    $(document).keydown(keyPressed);  
+// 
   function pushArray(newData) {
-    for (i in graphData) {
-     if (graphData[i].label) {
-       // find matchin label in new data
-       for (j in newData) {
-         if (newData[j].label) {
-           if(newData[j].label === graphData[i].label) {
-             // found a match
-             // remove data to make room for new data
-             if (graphData[i].data.length <= graphDataSize) {
-               graphData[i].data = graphData[i].data.slice(newData[j].data.length);
-             }
-             for(var x=0; x<newData[j].data.length; x++) {
-               var d = newData[j].data[x];
-               graphData[i].data.push(d);
-             }
-           }
-         } else {
-           if (newData[j].lastReadings) {
-             lastReadings = newData[j].lastReadings * 1000;
-           }
-         }
-       }
-       j = 0;
-     }
+    for (i in graphData) 
+    {
+      if (graphData[i].label) 
+      {
+        // find matchin label in new data
+        for (j in newData) 
+        {
+          if (newData[j].label) 
+          {
+            if(newData[j].label === graphData[i].label) 
+            {
+              // found a match
+              for(var x=0; x<newData[j].data.length; x++) 
+              {
+                // TODO: Don't append data if it is older than what we currently have
+                // I don't know why this is happening, If I figure it out later
+                // remove this piece.
+                // Also don't add new data if it is the same as the old data
+                var firstNewDataTime = newData[j].data[x][0];
+                var lastGraphDataTime = graphData[i].data[graphData[i].data.length - 1][0];
+                var newDataPoint = newData[j].data[x][1];
+                var previousDataPoint = graphData[i].data[graphData[i].data.length - 1][1];
+                if (lastGraphDataTime >= firstNewDataTime) continue;
+                if ((previousDataPoint != newDataPoint) || (graphData[i].label == "PID_T_Output")) {
+                  graphData[i].data.push(newData[j].data[x]);
+                } 
+              }
+              //Break out of the loop after processing
+            //  break;
+            }
+          } else {
+            if (newData[j].lastReadings)
+              lastReadings = newData[j].lastReadings * 1000;        
+          }
+        }
+        j = 0;
+      }
     }
   }
+
+function doPlot()
+{
+  lastPlot = $.plot($("#graph"), graphData, graphOpts);
+}
+
+function updateGraphRanges(from, to)
+{
+  $("#graphtt").fadeOut();
+  graphOpts.xaxis.min = from;
+  graphOpts.xaxis.max = to;
+  doPlot();
+}
+
+function overviewSelected(event, ranges)
+{
+  updateGraphRanges(ranges.xaxis.from, ranges.xaxis.to);
+}
+
+function overviewUnselected()
+{
+  updateGraphRanges(null, null);
+}
+
 
 function formatTime(date, includeSeconds)
 {
@@ -87,6 +171,14 @@ function formatTimer(secs, includeSeconds)
         lastGraphHover = now;
     }
   }
+
+function graphttClicked()
+{
+    // After clicking the tooltip to dismiss it, don't show again for 1s
+    lastGraphHover = +new Date();
+    lastGraphHover += 1000;
+    $(this).fadeOut();
+}
 
   function graphClicked(event, pos, item)
   {
@@ -148,10 +240,10 @@ function formatTimer(secs, includeSeconds)
     {
       if (srsClosestY !== -1)
       {
-        var axisY = plotGraph.getYAxes()[0];
+        var axisY = lastPlot.getYAxes()[0];
         var valY = graphData[srsClosestY].data[srsClosestYIdx][1];
         pos.pageY = axisY.p2c(valY) +
-            plotGraph.offset().top + plotGraph.getPlotOffset().top;
+            lastPlot.offset().top + lastPlot.getPlotOffset().top;
       }
 
       var d = new Date(pos.x);
@@ -166,27 +258,41 @@ function formatTimer(secs, includeSeconds)
     }
 }
 
-$(function() { 
 function getReadings(offset,numRows) {
-//  getReadings.count = 2;
+  if (sqlRequestPending == 1) 
+    return;
+  var range = $("#rangeselect").val();
+
+  $("#graphtt").fadeOut();
+  $("#rangeselect").prop("disabled", true);
+  $("#loadindic").show();
+
+  graphLoaded = false;
+    
   $.ajax({
     type: 'POST',
     url: 'getData.php',
     data: {offset: offset, numRows: numRows},
     dataType: 'json',
-    success: function(data) {
+    success: readSuccess,
+    error: function(data) {
+      var test = data;
+      alert('Error: getReadings Failed' + data);
+    },
+   async: true
+  });
+}
+
+function readSuccess(data) {
       var j = 0;
       getReadings.count = ++getReadings.count || 1;
-
-  //    if (graphData.length === 5) {
-  //      initial = 1;
-  //    }            
+          
       //Save the last successful readings query
       for(var i in data) {
         if (getReadings.count === 1) {
-          // First time through set data
+          // First time through set data limit set of data to graphDataSize
           if (data[i].label) {
-            graphData[j++].data = data[i].data;
+            graphData[j++].data = data[i].data.slice(-graphDataSize);
           }
           if (data[i].lastReadings) {
             lastReadings = data[i].lastReadings * 1000;
@@ -198,31 +304,49 @@ function getReadings(offset,numRows) {
           }
         }
       }
+      sqlRequestPending = 0;
+      graphLoaded = true;
+      updateGraph();
+    }
+
+function updateGraph()
+{
+    // we want to save the selected area, and if the selection is to the
+    // end of the graph, extend it to include the new point
+    var selectedArea, sizeSelectedArea;
+    var extendSelection = false;
+    var shiftSelection = false;
+
+    if (lastOverviewPlot)
+        selectedArea = lastOverviewPlot.getSelection();
+    if (selectedArea && selectedArea.xaxis.to == lastOverviewPlot.getAxes().xaxis.max)
+        extendSelection = true;
+      // if selected is at far left of overview, shift selected area right by the number of newly added datapoints
+//    var lastDataPoint = graphData[0].data[0][0];
+//    if (selectedArea && selectedArea.xaxis.from < lastDataPoint)
+//      shiftSelection = true;
+    if (selectedArea)
+      lastOverviewPlot.clearSelection(false);
       
-/*          plotOverview = $.plot("#graph_overview", graphData , graphOpts2);
-      plotGraph = $.plot("#graph", graphData , graphOpts);
-*/
-      plotOverview.setData(graphData);
-      plotGraph.setData(graphData);
-
-      plotOverview.setupGrid();
-      plotGraph.setupGrid();
-
-      plotOverview.draw();
-      plotGraph.draw();
-
-    },
-    error: function(data) {
-      var test = data;
-      alert('Error: getReadings Failed' + data);
-    },
-   async: true
-  });
+    lastOverviewPlot = $.plot($("#graphOverview"), graphData, graphOpts2);
+    
+    if (extendSelection)
+        selectedArea.xaxis.to = lastOverviewPlot.getAxes().xaxis.max;
+//    if (shiftSelection) {
+      // Keep selection same size (in time)
+//      sizeSelectedArea = selectedArea.xaxis.to - selectedArea.xaxis.from;
+//      selectedArea.xaxis.from = lastDataPoint;
+//      selectedArea.xaxis.to = lastDataPoint + sizeSelectedArea;
+//    }
+    if (selectedArea)
+        lastOverviewPlot.setSelection(selectedArea);
+    else
+        doPlot();
 }
 
 // Set up the control widget
 
-var updateInterval = 5000;
+var updateInterval = 10000;
 $("#updateInterval").val(updateInterval).change(function () {
     var v = $(this).val();
     if (v && !isNaN(+v)) {
@@ -236,96 +360,16 @@ $("#updateInterval").val(updateInterval).change(function () {
     }
 });
 
-/*
-        { label: "Set", color: "rgba(255,0,0,0.8)", lines: { lineWidth: 1 }, shadowSize: 0, data: [] },
-        { label: "Amb", color: "#789", lines: { show: true }, data: [] },
- */
-
-    $("#graph").bind("plothover", graphHover);
-    $("#graph").mouseout(function () { $("#graphtt").fadeOut(); });
-
-
-var graphOpts = {
-    legend: { show: true },
-    canvas: false,
-    series: {
-        lines: { show: true, lineWidth: 2 },
-        points: { show: false, symbol: "circle", radius: 1, fill: false },
-        shadowSize: 4,
-        downsample: {threshold: 0 }
-    },
-    xaxes: 
-    [{ 
-        show: true, 
-        mode: "time", 
-        timezone: "browser",
-        font: { color: "#ccc" } 
-    }],
-    yaxes: 
-    [{ 
-      show: true, 
-      ticks: 10, 
-      font: { color: "#ccc" } 
-      },{ 
-      show: true,
-      position: "right", 
-      min: 0, 
-      max: 100 
-    }],
-    grid: { 
-      clickable: true, 
-      hoverable: true, 
-      color: "#ccc",
-      borderColor: "#545454" },
-    selection: {mode: "x"},
-    legend: { position: "nw" }
-};
-
-var graphOpts2 = {
-    legend: { show: false },
-    canvas: false,
-    series: {
-        lines: { show: true, lineWidth: 1 },
-        points: { show: false },
-        shadowSize: 0,
-        downsample: {threshold: 2100 }
-    },
-    xaxis: { mode: "time", timezone: "browser" },
-    yaxis: { show: false },
-    grid: { clickable: false, color: "#ccc", borderColor: "#545454" },
-    selection: { mode: "x" }
-};
-
-   plotOverview = $.plot("#graph_overview", graphData , graphOpts2);
-   plotGraph = $.plot("#graph", graphData , graphOpts);
-
-    $("#graph").bind("plotselected", function (event, ranges) {
-
-      // do the zooming
-
-      plotGraph = $.plot("#graph", graphData , $.extend(true, {}, graphOpts, {
-          xaxis: {
-              min: ranges.xaxis.from,
-              max: ranges.xaxis.to
-          }
-      }));
-      //don't fire event on the overview to prevent eternal loop
-      plotOverview.setSelection(ranges,true);
-    });
-
-    $("#graph_overview").bind("plotselected", function (event, ranges) {
-      plotGraph.setSelection(ranges);
-    });
-
-   function update() {
-     //Offset needs to be lastReadings
+  function update() {
+ //   if (!sqlRequestPending) {
+      //Offset needs to be lastReadings
       if (lastReadings === 0) {
-        getReadings(1379610000,1);
+        getReadings(1378990000,1);
       } else {
         getReadings(lastReadings / 1000,1);
       }
         setTimeout(update, updateInterval);
-    }
-
+ //   }
+  }
     update();
 });
